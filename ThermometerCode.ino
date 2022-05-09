@@ -22,8 +22,10 @@
 
 double temp = 0;
 bool printTemp = false;
+bool invalidMeas = false;
 long time = 0;
 bool format = true;   // true for C, false for F
+int8_t num_failure = -1;
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET); //Declaring the OLED name
 
 
@@ -42,7 +44,7 @@ void setup() {
 void loop() {
   if(isButtonPressed()) {
     while(isButtonPressed()) {} // just busy wait
-    format = !format; 
+    format = !format;
   }
 
   if(isContact()){ 
@@ -57,17 +59,31 @@ void loop() {
       /*!!!!!!!!!!!!!!!!!
       * THIS function uses 0-5V whereas the datasheet says 0-2.5V, but I feel like it doesn't make a difference since
       * the transistor can handle that much base voltage?*/
-      //1000 Hz, 500 ms 
+      //1000 Hz, 500 ms
       tone(SPEAKER, 1000, 500);
+      num_failure++;
+      if(num_failure >= FAIL_LIMIT){
+        num_failure = -1;
+        invalidMeas = true;
+        break;
+      }
     } while((temp = measureTemp()) < 0);
-
-    // compare 2-3 results & average?
-    printTemp = true;
-    time = millis();
-    OLED_print(SHOWTEMP, temp, format);
     
-    temp = 0;
-    digitalWrite(LED, LOW);
+    if(invalidMeas) {
+      OLED_print(INVALID, 0, format);
+      delay(3);
+      invalidMeas = false;
+      printTemp = false;
+    }
+    else {
+      // compare 2-3 results & average?
+      printTemp = true;
+      time = millis();
+      OLED_print(SHOWTEMP, temp, format);
+      
+      temp = 0;
+      digitalWrite(LED, LOW);
+    }
   }
 
   if(printTemp) {

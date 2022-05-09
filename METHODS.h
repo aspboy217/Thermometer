@@ -128,7 +128,7 @@ uint16_t readCounter(){
  *  return temperature in celsius
  */
 double calculateTemp(uint16_t tmp)) {
-  return (double)MINTEMP + (double)TMP_PER_STEP * (double)(tmp - MINCOUNT);
+  return (double)MAXTEMP - (double)TMP_PER_STEP * (double)(tmp - MINCOUNT);
 }
 
 /* measureTemp : entire process of measuring temperature and return result in Celsius 
@@ -181,8 +181,12 @@ void OLED_print(options opt, double temp = 0, bool format = true){ // PRINT WITH
     }
   }
   else if(opt == MEASURING){
-    display.setCursor(0,0);                         
+    display.setCursor(0,0);
     display.println("Measuring your temperature...");
+  }
+  else if(opt == INVALID) {
+    display.setCursor(0,0);
+    display.println("Measuring invalid!");
   }
   else {
     display.setCursor(0, 0);
