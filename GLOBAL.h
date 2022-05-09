@@ -25,17 +25,18 @@ const uint8_t CTR_PIN[CTR_PIN_NUM] = {31, 9, 10, 11, 12, 13, 14, 32, 30};
 #define OLED_RESET    -1 // Reset pin # (or -1 if sharing Arduino reset pin)
 
 /* ========================= other vars ========================= */
-enum options {DEFAULT, SHOWTEMP, MEASURING};  // used for OLED printing options
+enum options {DEFAULT, SHOWTEMP, MEASURING, INVALID};  // used for OLED printing options
 #define CONTACT_THRESHOLD   500
 #define HEATUP_DELAY        1000    // 1 sec
 #define PULSE_WIDTH         1100/20 // in microsec
+#define FAIL_LIMIT          10
 
 // based on Celsius (CHOOSE THIS)
-#define MINCOUNT      1
-#define MAXCOUNT      2
+#define MINCOUNT      2248
+#define MAXCOUNT      2402
 #define MINTEMP       20
 #define MAXTEMP       40
-#define STEPS         ((MAXCOUNT-MINCOUNT))
-#define TMP_PER_STEP  (((MAXTEMP-MINTEMP)/STEPS))
+#define STEPS         (MAXCOUNT-MINCOUNT)
+#define TMP_PER_STEP  ((MAXTEMP-MINTEMP)/STEPS)
 
 #endif
