@@ -65,7 +65,7 @@ void pulseTrigger() {
  *  return false  - invalid count
  */
 bool isValid() {
-  return !digitalRead(VALID_BIT);
+  return digitalRead(VALID_BIT);
 }
 
 /* readCounter : read counter latched outputs and convert to 16bit unsigned int
@@ -74,7 +74,7 @@ bool isValid() {
 uint16_t readCounter(){
   uint16_t result = 0;
   for(int i = 0; i < CTR_PIN_NUM; i++)
-    result |= digitalRead(CTR_PIN[CTR_PIN_NUM - i - 1]) << i;
+    result |= digitalRead(CTR_PIN[i]) << i;
 
   result |= 0x4 << CTR_PIN_NUM;
   return result + 0x1;          // check this

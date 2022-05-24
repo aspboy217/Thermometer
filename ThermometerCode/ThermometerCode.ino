@@ -29,6 +29,7 @@ bool format = true;   // true for C, false for F
 int8_t num_failure = -1;
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET); //Declaring the OLED name
 
+bool hold = false;
 
 
 void OLED_setup();
@@ -48,14 +49,16 @@ void setup() {
 }
 
 void loop() {
-  
+  /*
   if(isButtonPressed()) {
     tone(SPEAKER, 500, 500);
     while(isButtonPressed()) {} // just busy wait
     format = !format;
   }
+  */
 
-  if(isContact()){ 
+  //if(isContact()){
+  if(isButtonPressed()){ 
     OLED_print(MEASURING, 0, format);
     
     digitalWrite(LED, HIGH);
@@ -84,10 +87,10 @@ void loop() {
       time_mark = millis();
 
       OLED_print(SHOWTEMP, temp, format);
-      mario_sing(1);
-      
+      //mario_sing(1);
       temp = 0;
     }
+    
     digitalWrite(LED, LOW);
   }
 
@@ -98,9 +101,6 @@ void loop() {
   else {
     OLED_print(NORMAL, 0, format);
   }
-  
-  // cooltime to shut off the thermometer
-  // celsius vs farenheit (do something with button?) - do outside of calculateTemp (just convert from C -> F)
 }
 
 
@@ -113,23 +113,27 @@ void loop() {
  *  return -1   - invalid measurement (due to upper 3 bit checkup - isValid)
  *  return tmp  - temperature in Celsius (double type - NOT one decimal)
  */
-// return negative value = failed measurement
 double measureTemp(){
   resetCounter();     // reset counter
   delay(1000);
   pulseTrigger();     // send one pulse to timer
   delay(1000);
 
-  if(!isValid())
+  if(!isValid()){
+    oled_print("invalid bit");
     return -1;
+  }
   else {
     uint16_t reading = readCounter();
+    
+    if((reading < MINCOUNT) || (reading > MAXCOUNT)){
+      oled_print("out of range");
+      oled_print(String(reading,HEX));
+      return -1;
+    }
 
     oled_print("valid meas");
-    oled_print(String(reading,DEC));
-    
-    if((reading < MINCOUNT) || (reading > MAXCOUNT))
-      return -1;
+    oled_print(String(reading,HEX));
     
     return calculateTemp(reading);
   }
