@@ -23,15 +23,7 @@ void pin_config() {
 
 
 /* ========================= METHODS ========================= */
-/* isContact : measuring contact (active low)
- *  return true  - contact measured
- *  return false - no contact
- */
-bool isContact() {
-  if(analogRead(CONTACT) < CONTACT_THRESHOLD)
-    return true;
-  return false;
-}
+
 
 /* isButtonPressed : measuring button press (active high)
  *  return true   - button pressed  
@@ -84,7 +76,24 @@ uint16_t readCounter(){
  *  return temperature in celsius
  */
 double calculateTemp(uint16_t tmp) {
-  return (double)MAXTEMP - (double)TMP_PER_STEP * (double)(tmp - MINCOUNT);
+  return (double)MAXTEMP - (double)TMP_PER_STEP * (double)(tmp - MINCOUNT) - 7;
+}
+
+/* Calibrate MIN and MAX count - called when we start-up */
+int calibrate() {
+  resetCounter();     // reset counter
+  delay(1000);
+  pulseTrigger();     // send one pulse to timer
+  delay(1000);
+  if(!isValid()){
+    return -1;
+  }
+
+  uint16_t ROOM_TEMP_COUNT = readCounter(); // based on 25C
+  MAXCOUNT = 55 + ROOM_TEMP_COUNT;
+  MINCOUNT = ROOM_TEMP_COUNT - 99;
+
+  return 0;
 }
 
 
