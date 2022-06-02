@@ -21,6 +21,7 @@
  *    - timer for shutting down?
  */
 
+
 double temp = 0;
 bool printTemp = false;
 bool invalidMeas = false;
@@ -29,12 +30,26 @@ bool format = true;   // true for C, false for F
 int8_t num_failure = -1;
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET); //Declaring the OLED name
 
-bool hold = false;
-
-
 void OLED_setup();
 void OLED_print(options opt, double temp = 0, bool format = true);
 void oled_print(String message);
+
+bool hold = false;
+
+/* isContact : measuring contact (active low)
+ *  return true  - contact measured
+ *  return false - no contact
+ */
+bool isContact() {
+  uint16_t reading = analogRead(CONTACT);
+  oled_print(String(reading, DEC));
+  if(reading < CONTACT_THRESHOLD){
+    return true;
+  }
+  else{
+    return false;
+  }
+}
 
 void setup() {
   pin_config();
@@ -43,28 +58,37 @@ void setup() {
 
   OLED_print(NORMAL, 0, format);
 
+  /*
+  if (calibrate()) {
+    oled_print("calibration fail");
+  }
+  else{
+    oled_print("MINCOUNT "+ String(MINCOUNT, DEC) + "  MAXCOUNT " + String(MAXCOUNT, DEC));
+    while(!isButtonPressed()) {}
+  }
+  */
+  
   tone(SPEAKER, 1000, 500);
+  
   //mario_sing(1);
   //mario_sing(2);
 }
 
 void loop() {
-  /*
   if(isButtonPressed()) {
     tone(SPEAKER, 500, 500);
     while(isButtonPressed()) {} // just busy wait
     format = !format;
   }
-  */
 
-  //if(isContact()){
-  if(isButtonPressed()){ 
+  if(isContact() && !printTemp){
+    //oled_print(String(analogRead(CONTACT), DEC));
+  //if(isButtonPressed()){ 
     OLED_print(MEASURING, 0, format);
     
     digitalWrite(LED, HIGH);
     delay(HEATUP_DELAY);  // heating up the metal
 
-    
     do {
       //1000 Hz, 500 ms
       tone(SPEAKER, 1000, 250);
@@ -97,7 +121,7 @@ void loop() {
   if(printTemp) {
     if((millis() - time_mark) > 5000)
       printTemp = false;
-  } 
+  }
   else {
     OLED_print(NORMAL, 0, format);
   }
@@ -127,13 +151,13 @@ double measureTemp(){
     uint16_t reading = readCounter();
     
     if((reading < MINCOUNT) || (reading > MAXCOUNT)){
-      oled_print("out of range");
-      oled_print(String(reading,HEX));
+      oled_print("temp out of range");
+      //oled_print(String(reading,DEC));
       return -1;
     }
 
-    oled_print("valid meas");
-    oled_print(String(reading,HEX));
+    //oled_print("valid measurement");
+    //oled_print(String(reading,DEC));
     
     return calculateTemp(reading);
   }
@@ -170,7 +194,7 @@ void OLED_print(options opt, double temp = 0, bool format = true){ // PRINT WITH
 
   if(opt == SHOWTEMP) {
     display.setCursor(0,0);                         
-    display.println("Your body temperature is:"); // might not be println - try print
+    display.println("Your temperature is:"); // might not be println - try print
     display.setCursor(0,15);
     if(format){
       display.println(temp);
@@ -185,7 +209,7 @@ void OLED_print(options opt, double temp = 0, bool format = true){ // PRINT WITH
   }
   else if(opt == MEASURING){
     display.setCursor(0,0);
-    display.println("Measuring your temperature...");
+    display.println("Measuring temperature...");
   }
   else if(opt == INVALID) {
     display.setCursor(0,0);
@@ -196,11 +220,12 @@ void OLED_print(options opt, double temp = 0, bool format = true){ // PRINT WITH
     display.println("Please contact your");
     display.println("skin");
     display.setCursor(0,15);
-    display.println("to measure your");
+    display.println("to measure");
     display.println("temperature");
   }
   display.display();
 }
+
 
 /* for debugging purposes */
 void oled_print(String message) {
