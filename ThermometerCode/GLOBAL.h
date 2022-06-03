@@ -26,15 +26,16 @@ const uint8_t CTR_PIN[CTR_PIN_NUM] = {1, 5, 6, 7, 8, 9, 10, 2, 0}; // MSB to LSB
 
 /* ========================= other vars ========================= */
 enum options {NORMAL, SHOWTEMP, MEASURING, INVALID};  // used for OLED printing options
-const int CONTACT_THRESHOLD   = 800;
+const int CONTACT_THRESHOLD   = 500;
 #define HEATUP_DELAY        1000    // 1 sec
 #define PULSE_WIDTH         50 // in microsec
-#define FAIL_LIMIT          10
+#define FAIL_LIMIT          5
 
 // based on Celsius (CHOOSE THIS)
-int ROOM_TEMP_COUNT = 0;
-int MINCOUNT        = 2248;
-int MAXCOUNT        = 2402;
+int ROOM_TEMP_COUNT = 0;  // this will be calibrated to 23 degrees C
+#define ROOM_TEMP     22.2  // based on C
+#define MINCOUNT      2248
+#define MAXCOUNT      2402
 #define MINTEMP       20
 #define MAXTEMP       40
 const double TMP_PER_STEP = double((MAXTEMP-MINTEMP))/(MAXCOUNT - MINCOUNT);

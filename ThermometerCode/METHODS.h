@@ -76,24 +76,29 @@ uint16_t readCounter(){
  *  return temperature in celsius
  */
 double calculateTemp(uint16_t tmp) {
-  return (double)MAXTEMP - (double)TMP_PER_STEP * (double)(tmp - MINCOUNT) - 7;
+  //return (double)MAXTEMP - (double)TMP_PER_STEP * (double)(tmp - MINCOUNT);
+  if(tmp < ROOM_TEMP_COUNT)
+    return (double)ROOM_TEMP + (double)(ROOM_TEMP_COUNT - tmp) * (double)TMP_PER_STEP;
+  else
+    return (double)ROOM_TEMP - (double)(tmp - ROOM_TEMP_COUNT) * (double)TMP_PER_STEP;
 }
 
 /* Calibrate MIN and MAX count - called when we start-up */
-int calibrate() {
+bool calibrate() {
   resetCounter();     // reset counter
   delay(1000);
   pulseTrigger();     // send one pulse to timer
   delay(1000);
   if(!isValid()){
-    return -1;
+    return false;
   }
 
-  uint16_t ROOM_TEMP_COUNT = readCounter(); // based on 25C
+  ROOM_TEMP_COUNT = readCounter(); // based on 25C
+  /*
   MAXCOUNT = 55 + ROOM_TEMP_COUNT;
   MINCOUNT = ROOM_TEMP_COUNT - 99;
-
-  return 0;
+  */
+  return true;
 }
 
 
